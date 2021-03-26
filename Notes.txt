@@ -1,0 +1,3 @@
+pyinstaller --onefile Train.py
+
+python -m pip install pyinstaller #To build the application
