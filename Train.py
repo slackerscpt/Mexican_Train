@@ -16,6 +16,8 @@ __email__ = "slackerscpt@gmail.com"
 __status__ = "Build"
 
 
+system('mode con: cols=150 lines=40')
+
 players = {}
 
 
