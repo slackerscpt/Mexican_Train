@@ -81,10 +81,13 @@ def write_players():
 
 def update_scores():
     current_scores = ''
-    with open(playerFile, 'r') as temp:
-        current_scores = json.load(temp)
+    with open(playerFile, 'r') as players:
+        current_scores = json.load(players)
 
     print (current_scores)
+
+    #We need to update the score
+
 
     
 def clear(): 
