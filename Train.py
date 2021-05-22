@@ -4,7 +4,18 @@ Provides ability to score the Mexican Train Game
 
 """
 
-from os import system, name
+from os import system, name, getcwd, mkdir, path
+from pathlib import Path
+import json
+
+currentDir = getcwd()
+dataFolder = "%s\data" %currentDir
+if not path.exists(dataFolder):
+    print ('Creating `{}` folder'.format(dataFolder))
+    mkdir(dataFolder)
+playerFile = "%s\player.json" %dataFolder
+scoreFile = "%s\score.json" %dataFolder
+
 
 __author__ = "Josh Thayer"
 __copyright__ = "Copyright 2021, slackerscpt inc"
@@ -16,7 +27,7 @@ __email__ = "slackerscpt@gmail.com"
 __status__ = "Build"
 
 
-system('mode con: cols=150 lines=40')
+#system('mode con: cols=150 lines=40')
 
 players = {}
 
@@ -55,8 +66,27 @@ class Dominos:
     def played(self, double_played):
         self.played_set.append(double_played)
         self.doubles_set.remove(double_played)
+
+def write_players():
+    #with open (playerFile) as f:
+    x = {}
+    for player in players:
+        x[player] = []
+        x[player].append({
+            'name' : players[player].name,
+            'score' : players[player].score
+        })
+    with open (playerFile, 'w') as f:
+        json.dump(x, f)
+
+def update_scores():
+    current_scores = ''
+    with open(playerFile, 'r') as temp:
+        current_scores = json.load(temp)
+
+    print (current_scores)
+
     
-        
 def clear(): 
 
   
@@ -199,12 +229,14 @@ def show_train():
 def main():
     show_train()
     Deck = setup_game()
-    play_game(Deck)
+    write_players()
+    update_scores()
+
+    #play_game(Deck)
 
 if __name__ == '__main__':  
     main()
-
-
+    
 
 #X is \u274c
 #check is \u2705
