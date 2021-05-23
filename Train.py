@@ -77,7 +77,7 @@ def write_players():
             'score' : players[player].score
         })
     with open (playerFile, 'w') as f:
-        json.dump(x, f)
+        json.dump(x, f, indent=4)
 
 def update_scores():
     current_scores = ''
@@ -88,8 +88,35 @@ def update_scores():
 
     #We need to update the score
 
+    scoreSheet = ''
+    with open(scoreFile, 'r') as scores:
+        scoreSheet = json.load(scores)
 
+    pretty_json = json.dumps(scoreSheet, indent=4)
+
+    print (scoreSheet)
+    print (pretty_json)
+    print (type(scoreSheet["2"]["scores"][0]))
+
+    new_scores = [{"1": 5},{"2": 5},{"3": 18}]
+
+    test_scores("6", "4", new_scores)
     
+def test_scores(round, double, scores=[]):
+    data = {
+        "{}".format(round) : {
+            "double": "{}".format(double) ,
+            "scores": scores
+        }
+    }
+    with open(scoreFile, 'r+') as score_file:
+        #json.dump(score_file, data, indent=4)
+        temp = json.load(score_file)
+        print (temp)
+        temp.update(data)
+        print (temp)
+        score_file.seek(0)
+        json.dump(temp, score_file, indent=4)
 def clear(): 
 
   
