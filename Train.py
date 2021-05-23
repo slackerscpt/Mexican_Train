@@ -71,52 +71,49 @@ def write_players():
     #with open (playerFile) as f:
     x = {}
     for player in players:
-        x[player] = []
-        x[player].append({
-            'name' : players[player].name,
-            'score' : players[player].score
-        })
+        x[player] = {'name' : players[player].name, 'score' : players[player].score}
     with open (playerFile, 'w') as f:
         json.dump(x, f, indent=4)
-
-def update_scores():
-    current_scores = ''
-    with open(playerFile, 'r') as players:
-        current_scores = json.load(players)
-
-    print (current_scores)
-
-    #We need to update the score
-
-    scoreSheet = ''
-    with open(scoreFile, 'r') as scores:
-        scoreSheet = json.load(scores)
-
-    pretty_json = json.dumps(scoreSheet, indent=4)
-
-    print (scoreSheet)
-    print (pretty_json)
-    print (type(scoreSheet["2"]["scores"][0]))
-
-    new_scores = [{"1": 5},{"2": 5},{"3": 18}]
-
-    test_scores("6", "4", new_scores)
-    
-def test_scores(round, double, scores=[]):
+ 
+def update_scores(round, double, scores):
+    '''
+    round is the round number you are record
+    double is the double played for the round
+    scores is a dict of the players scores for the round
+    example : scores = {"1": 2, "2": 50}
+    This will update the scores in the scores file, also update the running total in the players file
+    '''
     data = {
         "{}".format(round) : {
             "double": "{}".format(double) ,
             "scores": scores
         }
     }
-    with open(scoreFile, 'r+') as score_file:
-        #json.dump(score_file, data, indent=4)
-        temp = json.load(score_file)
-        print (temp)
-        temp.update(data)
-        print (temp)
-        score_file.seek(0)
-        json.dump(temp, score_file, indent=4)
+    temp = ''
+    #If score file is not already created, we will need to create it. 
+    #We also want to re-create the file if we are on round 1, to remove previous games scores
+    if not path.exists(scoreFile) or round == 1:
+        with open(scoreFile, 'w') as score_file:
+            json.dump(data, score_file, indent=4)
+    else:
+        with open(scoreFile, 'r+') as score_file:
+            temp = json.load(score_file)
+            temp.update(data)
+            score_file.seek(0)
+            json.dump(temp, score_file, indent=4)
+
+
+
+    #Update the players score
+    with open (playerFile, 'r+') as player_file:
+        playerTemp = json.load(player_file)
+        for keys in players:
+            players[keys].add_score(scores[keys])
+            playerTemp['{}'.format(keys)]['score'] = players[keys].score
+            player_file.seek(0)
+            json.dump(playerTemp, player_file, indent=4)
+
+
 def clear(): 
 
   
@@ -146,6 +143,9 @@ def setup_players(number_of_players):
         name = input('Please enter player {} name: '.format(i))
         players[i] = Player(name)
 
+    #Let's write out the players
+    write_players()
+
 def domino_set():
     high_double = input('Please enter the highest double in your set: ')
     try: 
@@ -168,26 +168,46 @@ def pick_double(Deck):
         print ('Please enter a number')
         pick_double(Deck)
 
+
 def score_round(Deck):
-    scores_to_enter = []
-    clear()
-    print("Doubles Played: {}".format(Deck.played_set[-1]))
+    '''
+    This section will take in the Deck, so we can determine what card was played. 
+    In this function we will prompt the user for scores. 
+    New update we will allow the score to be updated. 
+    We will need to pass a variable to confirm scores. 
+    '''
+    
+
+    #We plan to show a screen like this
+    # <number> <name> <score given>
+    # If no score given will read N/A
+    recording_score = True
+    round_scores = {}
     for keys in players.keys():
-        scores_to_enter.append(keys)
-    while len(scores_to_enter) > 0:
+        round_scores[keys] = 0
+    while (recording_score) :
+    
+        clear()
+        print("Doubles Played: {}".format(Deck.played_set[-1]))
+
         print ('Please enter the scores of the players')
-        for num in scores_to_enter:
-            print ('{}){}'.format(num, players[num].name))
+        for num in round_scores:
+            print ('{}){} Score Recorded: {}'.format(num, players[num].name, round_scores[num]))
+        print ('Please Enter 99 to record all scores')
         try:
             player_to_score = int(input('Please select player to enter score: '))
-            if player_to_score in scores_to_enter:
+            if player_to_score in round_scores:
                 score = int(input("{}'s Score: ".format(players[player_to_score].name)))
-                players[player_to_score].add_score(score)
-                scores_to_enter.remove(player_to_score)
+                round_scores[player_to_score] = score
+            elif player_to_score == 99:
+                recording_score = False
+                #We will exit out
             else:
-                print('Please select a player left to score')
+                print('Please select a player score')
         except:
             print ('Please enter a number of a player left to score')
+
+    update_scores(len(Deck.played_set), Deck.played_set[-1], round_scores)
 
 def display_scores(Deck):
     rankings = []
@@ -259,10 +279,7 @@ def show_train():
 def main():
     show_train()
     Deck = setup_game()
-    write_players()
-    update_scores()
-
-    #play_game(Deck)
+    play_game(Deck)
 
 if __name__ == '__main__':  
     main()
