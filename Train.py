@@ -207,6 +207,23 @@ def score_round(Deck):
 
     update_scores(len(Deck.played_set), Deck.played_set[-1], round_scores)
 
+def display_round_scores():
+    with open(scoreFile, 'r') as score_file:
+        temp = json.load(score_file)
+        for rounds in temp:
+            print (rounds)
+            print (temp[rounds]['double'])
+            print (temp[rounds]['scores'])
+
+
+            #What we want it to look like when we print on the page
+            #round | double played | player_name | player_name2
+            # 1    |      1        |     50      |      0 
+            # 2    |      0        |      0      |    200
+            #______|_______________|_____________|_____________
+            #Totals                |     50      |    2000
+
+
 def display_scores(Deck):
     rankings = []
     for key in players:
@@ -275,9 +292,10 @@ def show_train():
     """)
     
 def main():
-    show_train()
-    Deck = setup_game()
-    play_game(Deck)
+    # show_train()
+    # Deck = setup_game()
+    # play_game(Deck)
+    display_round_scores()
 
 if __name__ == '__main__':  
     main()
