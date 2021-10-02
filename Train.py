@@ -113,7 +113,6 @@ def update_scores(round, double, scores):
             player_file.seek(0)
             json.dump(playerTemp, player_file, indent=4)
 
-
 def clear(): 
 
   
@@ -167,7 +166,6 @@ def pick_double(Deck):
     except:
         print ('Please enter a number')
         pick_double(Deck)
-
 
 def score_round(Deck):
     '''
