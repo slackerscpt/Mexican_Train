@@ -7,6 +7,9 @@ Provides ability to score the Mexican Train Game
 from os import system, name, getcwd, mkdir, path
 from pathlib import Path
 import json
+from src.players import Player
+from src.dominos import Dominos
+
 
 currentDir = getcwd()
 dataFolder = "%s\data" %currentDir
@@ -30,42 +33,6 @@ __status__ = "Build"
 #system('mode con: cols=150 lines=40')
 
 players = {}
-
-
-
-
-class Player:
-    """
-    This will setup a player
-    Init setup will require name
-    add_score will add to the current players score
-    """
-    def __init__(self, name):
-        self.name = name
-        self.score = 0
-    def add_score(self, update):
-        self.score += update
-
-class Dominos:
-    """
-    The Dominos class, it will take in a number as the high double
-    It will intial set the doubles_set by taking every number under high until 0 to create an array on doubles
-    played_set will contain an array of all the doubles played
-    played function will take in a number of doubles played, remove it from doubles set and add it to played_set
-    """
-    def __init__(self, high):
-        self.high = high
-        self.doubles_set = []
-        self.played_set = []
-        self.__setup_doubles()
-    
-    def __setup_doubles(self):
-        for i in range(self.high, -1 , -1):
-            self.doubles_set.append(i)
-    
-    def played(self, double_played):
-        self.played_set.append(double_played)
-        self.doubles_set.remove(double_played)
 
 def write_players():
     #with open (playerFile) as f:
@@ -109,6 +76,7 @@ def update_scores(round, double, scores):
         playerTemp = json.load(player_file)
         for keys in players:
             players[keys].add_score(scores[keys])
+            players[keys].add_round_score(round, scores[keys])
             playerTemp['{}'.format(keys)]['score'] = players[keys].score
             player_file.seek(0)
             json.dump(playerTemp, player_file, indent=4)
@@ -208,6 +176,11 @@ def score_round(Deck):
     update_scores(len(Deck.played_set), Deck.played_set[-1], round_scores)
 
 def display_round_scores():
+
+    for player in players:
+        print (players[player].name)
+        print (players[player].get_round_score(1))
+        print (players[player].rounds)
     with open(scoreFile, 'r') as score_file:
         temp = json.load(score_file)
         for rounds in temp:
@@ -292,9 +265,9 @@ def show_train():
     """)
     
 def main():
-    # show_train()
-    # Deck = setup_game()
-    # play_game(Deck)
+    show_train()
+    Deck = setup_game()
+    play_game(Deck)
     display_round_scores()
 
 if __name__ == '__main__':  
