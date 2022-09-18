@@ -9,7 +9,6 @@ from pathlib import Path
 import json
 from src.players import Player
 from src.dominos import Dominos
-from src.graphics import show_train, clear;
 
 
 currentDir = getcwd()
@@ -25,10 +24,13 @@ __author__ = "Josh Thayer"
 __copyright__ = "Copyright 2021, slackerscpt inc"
 __credits__ = ["Josh Thayer"]
 __license__ = "GPL"
-__version__ = "0.2.0"
+__version__ = "0.1.0"
 __maintainer__ = "Josh Thayer"
 __email__ = "slackerscpt@gmail.com"
 __status__ = "Build"
+
+
+#system('mode con: cols=150 lines=40')
 
 players = {}
 
@@ -246,15 +248,32 @@ def play_game(Deck):
         
     input('Press any key to end the game')
 
-
-
+def show_train():
+    print("""
+                 _-====-__-======-__-========-_____-============-__
+               _(                                                 _)
+            OO(           _/_ _  _  _/_   _/_ _  _  _/_           )_
+           0  (_          (__(_)(_) (__   (__(_)(_) (__            _)
+         o0     (_                                                _)
+        o         '=-___-===-_____-========-___________-===-dwb-='
+      .o                                _________
+     . ______          ______________  |         |      _____
+   _()_||__|| ________ |            |  |_________|   __||___||__
+  (BNSF 1995| |      | |            | __Y______00_| |_         _|
+ /-OO----OO""="OO--OO"="OO--------OO"="OO-------OO"="OO-------OO"=P
+#####################################################################
+    """)
+    
 def main():
-    clear()
     show_train()
     Deck = setup_game()
     play_game(Deck)
     display_round_scores()
 
-
 if __name__ == '__main__':  
     main()
+    
+
+#X is \u274c
+#check is \u2705
+#print on same line: print("The Simpsons", end='\r')
