@@ -217,6 +217,8 @@ def display_scores(Deck):
         print ("\tWinner is {}\n\n".format(players[rankings[0]].name))
     for player in rankings:
         print("\t{}'s score: {}".format(players[player].name, players[player].score))
+
+    
     
 def setup_game():
 
@@ -243,6 +245,7 @@ def play_game(Deck):
         score_round(Deck)
         clear()  
         display_scores(Deck) 
+        display_round_scores()
         
     input('Press any key to end the game')
 
