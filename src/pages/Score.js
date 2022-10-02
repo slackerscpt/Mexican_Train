@@ -1,3 +1,7 @@
+import { useTable, Column } from "react-table";
+//https://www.paigeniedringhaus.com/blog/customize-and-style-complex-data-in-react-table
+
+
 const DUMMY_SCORES = [
     {
         round: 1,
