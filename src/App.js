@@ -9,9 +9,10 @@ import Layout from './components/layout/Layout';
 import LoadingSpinner from './components/UI/LoadingSpinner';
 
 //Lazy Load
-const NewQuote = React.lazy(() => import('./pages/NewQuote'));
-const AllQuotes = React.lazy(() => import('./pages/AllQuotes'));
-const QuoteDetail = React.lazy(() => import('./pages/QuoteDetail'))
+const MainPage = React.lazy(() => import('./pages/Main'));
+const SetupPage = React.lazy(() => import('./pages/Setup'));
+const ScorePage = React.lazy(() => import('./pages/Score'));
+const GamePage = React.lazy(() => import('./pages/Game'));
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 function App() {
@@ -24,16 +25,19 @@ function App() {
             </div>}>
             <Switch>
                 <Route path='/' exact>
-                    <Redirect to='/quotes' />
+                    <Redirect to='/main' />
                 </Route>
-                <Route path='/quotes' exact>
-                    <AllQuotes />
+                <Route path='/main' exact>
+                    <MainPage />
                 </Route>
-                <Route path='/quotes/:quoteId'>
-                    <QuoteDetail />
+                <Route path='/setup' exact>
+                    <SetupPage />
                 </Route>
-                <Route path='/new-quote'>
-                    <NewQuote />
+                <Route path='/scores' exact>
+                    <ScorePage />
+                </Route>
+                <Route path='/game' exact>
+                    <GamePage />
                 </Route>
                 <Route path='*'>
                 <   NotFound />
