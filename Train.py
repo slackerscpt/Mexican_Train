@@ -217,6 +217,7 @@ def display_scores(Deck):
         print ("\tWinner is {}\n\n".format(players[rankings[0]].name))
     for player in rankings:
         print("\t{}'s score: {}".format(players[player].name, players[player].score))
+    # If there is a tie, the player who scored the most zero-point rounds wins. If there is still a tie at this point, the player with the lowest total in a round, other than zero, wins.
     
 def setup_game():
 
