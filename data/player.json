@@ -1,14 +1,14 @@
 {
     "1": {
-        "name": "Josh",
-        "score": 50
-    },
-    "2": {
-        "name": "Brooke",
+        "name": "1",
         "score": 100
     },
+    "2": {
+        "name": "2",
+        "score": 129
+    },
     "3": {
-        "name": "Dave",
-        "score": 225
+        "name": "3",
+        "score": 0
     }
 }
