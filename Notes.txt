@@ -15,3 +15,23 @@ Backend:
 Front End:
     For now still focus on command line
     Work on ability to make it html page
+
+
+Database:
+    Player:
+        1) Create player name TABLE
+        2) Update player name TABLE
+        3) Delete player name TABLE
+        4) Read player name TABLE
+    Game Details:
+        1) CRUD details TABLE (max domino)
+    Score:
+        1) Create player name TABLE
+        2) Update player name TABLE
+        3) Delete player name TABLE
+        4) Read player name TABLE 
+        5) Need function to get scores by player
+        6) Need function to get all scores
+        7) Need function to determine rankings
+        
+    Scores
