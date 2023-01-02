@@ -32,47 +32,6 @@ __status__ = "Build"
 
 players = {}
 
-
- 
-def update_scores(round, double, scores):
-    '''
-    round is the round number you are record
-    double is the double played for the round
-    scores is a dict of the players scores for the round
-    example : scores = {"1": 2, "2": 50}
-    This will update the scores in the scores file, also update the running total in the players file
-    '''
-    data = {
-        "{}".format(round) : {
-            "double": "{}".format(double) ,
-            "scores": scores
-        }
-    }
-    temp = ''
-    #If score file is not already created, we will need to create it. 
-    #We also want to re-create the file if we are on round 1, to remove previous games scores
-    if not path.exists(scoreFile) or round == 1:
-        with open(scoreFile, 'w') as score_file:
-            json.dump(data, score_file, indent=4)
-    else:
-        with open(scoreFile, 'r+') as score_file:
-            temp = json.load(score_file)
-            temp.update(data)
-            score_file.seek(0)
-            json.dump(temp, score_file, indent=4)
-
-
-
-    #Update the players score
-    with open (playerFile, 'r+') as player_file:
-        playerTemp = json.load(player_file)
-        for keys in players:
-            players[keys].add_score(scores[keys])
-            players[keys].add_round_score(round, scores[keys])
-            playerTemp['{}'.format(keys)]['score'] = players[keys].score
-            player_file.seek(0)
-            json.dump(playerTemp, player_file, indent=4)
-
 def players_count():
     player_count = input('Please enter the number of players[3-8]: ')
     try:
@@ -152,29 +111,6 @@ def score_round(Deck):
             print ('Please enter a number of a player left to score')
     for player in players:
         players[player].scoreRound(len(Deck.played_set), round_scores[player])
-
-
-def display_round_scores():
-
-    for player in players:
-        print (players[player].name)
-        print (players[player].get_round_score(1))
-        print (players[player].rounds)
-    with open(scoreFile, 'r') as score_file:
-        temp = json.load(score_file)
-        for rounds in temp:
-            print (rounds)
-            print (temp[rounds]['double'])
-            print (temp[rounds]['scores'])
-
-
-            #What we want it to look like when we print on the page
-            #round | double played | player_name | player_name2
-            # 1    |      1        |     50      |      0 
-            # 2    |      0        |      0      |    200
-            #______|_______________|_____________|_____________
-            #Totals                |     50      |    2000
-
 
 def display_scores(Deck):
     rankings = []
