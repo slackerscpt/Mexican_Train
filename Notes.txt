@@ -35,3 +35,11 @@ Database:
         7) Need function to determine rankings
         
     Scores
+
+
+During Setup:
+    Ask User for number of players
+    Ask User for names of players
+    Ask User for Max domino
+
+    
