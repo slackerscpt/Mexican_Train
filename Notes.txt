@@ -14,4 +14,4 @@ Backend:
 
 Front End:
     For now still focus on command line
-    Work on ability to make it html pageg
+    Work on ability to make it html page
