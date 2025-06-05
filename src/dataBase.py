@@ -51,20 +51,23 @@ def execute_read_query(connection, query):
         print(f"The error '{e}' occurred")
 
 
-database = create_connection('players.db')
+database = create_connection('..\data\players.db')
 
-execute_query(database, create_users_table)  
+##execute_query(database, create_users_table)  
 
-execute_query(database, create_users)  
 
-select_users = "SELECT * from users"
-users = execute_read_query(database, select_users)
 
-for user in users:
-    print(user)
 
-select_names = "SELECT name from users"
-names = execute_read_query(database, select_names)
+zero_score = "SELECT name, COUNT(score) FROM scores WHERE score = 0 GROUP BY name"
+zeros = execute_read_query(database, zero_score)
 
-for name in names:
-    print(name)
+total_score = "SELECT name, SUM(score) FROM scores GROUP BY name"
+total = execute_read_query(database, total_score)
+
+print (zeros)
+print (total)
+
+fullData = "SELECT * FROM scores WHERE name = 'Josh'"
+full = execute_read_query(database, fullData)
+
+print(full)

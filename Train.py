@@ -112,7 +112,7 @@ def score_round(Deck):
     for player in players:
         players[player].scoreRound(len(Deck.played_set), round_scores[player])
 
-def display_scores(Deck):
+def determine_ranking(Deck):
     rankings = []
     for key in players:
         if len(rankings) == 0:
@@ -125,6 +125,11 @@ def display_scores(Deck):
                 elif (position + 1) >= len(rankings):
                     rankings.append(key)
                     break
+
+    return rankings
+
+def display_scores(Deck):
+    rankings = determine_ranking(Deck)
 
     if len(Deck.doubles_set) != 0:
         print ('Score Board after round {}:\n'.format(len(Deck.played_set)))  
@@ -166,7 +171,6 @@ def play_game(Deck):
         score_round(Deck)
         clear()  
         display_scores(Deck) 
-        #display_round_scores()
         
     input('Press any key to end the game')
 
@@ -175,8 +179,6 @@ def main():
     show_train()
     Deck = setup_game()
     play_game(Deck)
-    #display_round_scores()
-
 
 if __name__ == '__main__':  
     main()
