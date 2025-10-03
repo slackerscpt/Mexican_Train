@@ -7,122 +7,30 @@ Provides ability to score the Mexican Train Game
 from os import system, name, getcwd, mkdir, path
 from pathlib import Path
 import json
+from src.players import Player, start_up
+from src.dominos import Dominos
+from src.graphics import show_train, clear;
+
 
 currentDir = getcwd()
 dataFolder = "%s\data" %currentDir
 if not path.exists(dataFolder):
     print ('Creating `{}` folder'.format(dataFolder))
     mkdir(dataFolder)
-playerFile = "%s\player.json" %dataFolder
-scoreFile = "%s\score.json" %dataFolder
+#playerFile = "%s\player.json" %dataFolder
+#scoreFile = "%s\score.json" %dataFolder
 
 
 __author__ = "Josh Thayer"
 __copyright__ = "Copyright 2021, slackerscpt inc"
 __credits__ = ["Josh Thayer"]
 __license__ = "GPL"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __maintainer__ = "Josh Thayer"
 __email__ = "slackerscpt@gmail.com"
 __status__ = "Build"
 
-
-#system('mode con: cols=150 lines=40')
-
 players = {}
-
-
-
-
-class Player:
-    """
-    This will setup a player
-    Init setup will require name
-    add_score will add to the current players score
-    """
-    def __init__(self, name):
-        self.name = name
-        self.score = 0
-    def add_score(self, update):
-        self.score += update
-
-class Dominos:
-    """
-    The Dominos class, it will take in a number as the high double
-    It will intial set the doubles_set by taking every number under high until 0 to create an array on doubles
-    played_set will contain an array of all the doubles played
-    played function will take in a number of doubles played, remove it from doubles set and add it to played_set
-    """
-    def __init__(self, high):
-        self.high = high
-        self.doubles_set = []
-        self.played_set = []
-        self.__setup_doubles()
-    
-    def __setup_doubles(self):
-        for i in range(self.high, -1 , -1):
-            self.doubles_set.append(i)
-    
-    def played(self, double_played):
-        self.played_set.append(double_played)
-        self.doubles_set.remove(double_played)
-
-def write_players():
-    #with open (playerFile) as f:
-    x = {}
-    for player in players:
-        x[player] = {'name' : players[player].name, 'score' : players[player].score}
-    with open (playerFile, 'w') as f:
-        json.dump(x, f, indent=4)
- 
-def update_scores(round, double, scores):
-    '''
-    round is the round number you are record
-    double is the double played for the round
-    scores is a dict of the players scores for the round
-    example : scores = {"1": 2, "2": 50}
-    This will update the scores in the scores file, also update the running total in the players file
-    '''
-    data = {
-        "{}".format(round) : {
-            "double": "{}".format(double) ,
-            "scores": scores
-        }
-    }
-    temp = ''
-    #If score file is not already created, we will need to create it. 
-    #We also want to re-create the file if we are on round 1, to remove previous games scores
-    if not path.exists(scoreFile) or round == 1:
-        with open(scoreFile, 'w') as score_file:
-            json.dump(data, score_file, indent=4)
-    else:
-        with open(scoreFile, 'r+') as score_file:
-            temp = json.load(score_file)
-            temp.update(data)
-            score_file.seek(0)
-            json.dump(temp, score_file, indent=4)
-
-
-
-    #Update the players score
-    with open (playerFile, 'r+') as player_file:
-        playerTemp = json.load(player_file)
-        for keys in players:
-            players[keys].add_score(scores[keys])
-            playerTemp['{}'.format(keys)]['score'] = players[keys].score
-            player_file.seek(0)
-            json.dump(playerTemp, player_file, indent=4)
-
-def clear(): 
-
-  
-    # for windows 
-    if name == 'nt': 
-        _ = system('cls') 
-  
-    # for mac and linux(here, os.name is 'posix') 
-    else: 
-        _ = system('clear') 
 
 def players_count():
     player_count = input('Please enter the number of players[3-8]: ')
@@ -140,10 +48,7 @@ def players_count():
 def setup_players(number_of_players):
     for i in range(1, number_of_players+1, 1):
         name = input('Please enter player {} name: '.format(i))
-        players[i] = Player(name)
-
-    #Let's write out the players
-    write_players()
+        players[i] = Player(name, i)
 
 def domino_set():
     high_double = input('Please enter the highest double in your set: ')
@@ -204,22 +109,27 @@ def score_round(Deck):
                 print('Please select a player score')
         except:
             print ('Please enter a number of a player left to score')
+    for player in players:
+        players[player].scoreRound(len(Deck.played_set), round_scores[player])
 
-    update_scores(len(Deck.played_set), Deck.played_set[-1], round_scores)
-
-def display_scores(Deck):
+def determine_ranking(Deck):
     rankings = []
     for key in players:
         if len(rankings) == 0:
             rankings.append(key)
         else:
             for position, other_player in enumerate(rankings):
-                if players[key].score < players[other_player].score:
+                if players[key].get_score() < players[other_player].get_score():
                     rankings.insert(position, key)
                     break
                 elif (position + 1) >= len(rankings):
                     rankings.append(key)
                     break
+
+    return rankings
+
+def display_scores(Deck):
+    rankings = determine_ranking(Deck)
 
     if len(Deck.doubles_set) != 0:
         print ('Score Board after round {}:\n'.format(len(Deck.played_set)))  
@@ -228,12 +138,18 @@ def display_scores(Deck):
         print ('Final Standings:\n')
         print ("\tWinner is {}\n\n".format(players[rankings[0]].name))
     for player in rankings:
-        print("\t{}'s score: {}".format(players[player].name, players[player].score))
-    
+        print("\t{}'s score: {}".format(players[player].name, players[player].get_score()))
+        
+    # If there is a tie, the player who scored the most zero-point rounds wins. 
+    # If there is still a tie at this point, the player with the lowest total in a round, other than zero, wins.
+    # We will have to see if there are ties for first, use get_zero_round_count to get
+
 def setup_game():
 
     player_count = None
     high_double = None
+
+    start_up()
 
     while player_count == None:
         player_count = players_count()
@@ -258,31 +174,11 @@ def play_game(Deck):
         
     input('Press any key to end the game')
 
-def show_train():
-    print("""
-                 _-====-__-======-__-========-_____-============-__
-               _(                                                 _)
-            OO(           _/_ _  _  _/_   _/_ _  _  _/_           )_
-           0  (_          (__(_)(_) (__   (__(_)(_) (__            _)
-         o0     (_                                                _)
-        o         '=-___-===-_____-========-___________-===-dwb-='
-      .o                                _________
-     . ______          ______________  |         |      _____
-   _()_||__|| ________ |            |  |_________|   __||___||__
-  (BNSF 1995| |      | |            | __Y______00_| |_         _|
- /-OO----OO""="OO--OO"="OO--------OO"="OO-------OO"="OO-------OO"=P
-#####################################################################
-    """)
-    
 def main():
+    clear()
     show_train()
     Deck = setup_game()
     play_game(Deck)
 
 if __name__ == '__main__':  
     main()
-    
-
-#X is \u274c
-#check is \u2705
-#print on same line: print("The Simpsons", end='\r')

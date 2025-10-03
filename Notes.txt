@@ -1,3 +1,17 @@
 pyinstaller --onefile Train.py
 
 python -m pip install pyinstaller #To build the application
+
+
+
+Ideas:
+Seperate backend and front end. 
+
+Backend:
+    Create functions for each score call
+    Be able to call and update data
+    Be able to display all scores by round (hand back full data)
+
+Front End:
+    For now still focus on command line
+    Work on ability to make it html page
