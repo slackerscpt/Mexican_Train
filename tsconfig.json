@@ -1,12 +1,15 @@
-FROM node:20-alpine
-
-WORKDIR /app
-
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "DOM"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["tests/**/*.ts", "playwright.config.ts"]
+}
