@@ -1,8 +1,10 @@
-##
-KNOWN ISSUES
-##
+node_modules/
 
-Ranks does not consider when players are tied
+# Saved game state — keep the folder, not the data
+data/*.json
 
-Need to display out the scores like excel chart
-
+# Playwright output
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/

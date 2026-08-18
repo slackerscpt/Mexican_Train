@@ -1,0 +1,9 @@
+node_modules
+data
+.git
+tests
+playwright-report
+test-results
+playwright.config.ts
+tsconfig.json
+.github
