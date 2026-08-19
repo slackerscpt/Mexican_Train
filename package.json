@@ -1,0 +1,23 @@
+{
+  "name": "mexican-train-scorekeeper",
+  "version": "1.0.0",
+  "description": "Local score keeper for Mexican Train dominoes, with JSON-file persistence.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.5.4"
+  }
+}
