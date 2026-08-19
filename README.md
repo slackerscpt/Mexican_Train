@@ -29,7 +29,7 @@ docker run -p 3000:3000 -v "$(pwd)/data:/app/data" mexican-train-scorekeeper
 
 ## Run without Docker
 
-Requires Node.js 18+.
+Requires Node.js 24+.
 
 ```
 npm install

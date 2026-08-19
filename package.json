@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Local score keeper for Mexican Train dominoes, with JSON-file persistence.",
   "main": "server.js",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "start": "node server.js",
     "test:e2e": "playwright test",
@@ -14,7 +17,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",
-    "@types/node": "^20.14.0",
+    "@types/node": "^24.0.0",
     "typescript": "^5.5.4"
   }
 }
