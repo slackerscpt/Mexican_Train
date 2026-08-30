@@ -1,4 +1,4 @@
-name: E2E Tests
+name: Tests
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  e2e:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -23,6 +23,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

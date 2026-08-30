@@ -14,7 +14,7 @@
     --ivory-dim:#C9C0AC;
     --brass:#A9762F;
     --brass-bright:#D6A24C;
-    --signal:#8C2F26;
+    --signal:#E06C55;
     --rail:#3A5A54;
     --line:rgba(237,230,214,0.14);
   }
@@ -310,6 +310,7 @@
   <div class="loading-screen">Loading saved game…</div>
 </div>
 
+<script src="js/game-logic.js"></script>
 <script>
 /* ---------------- State ---------------- */
 function defaultState(){
@@ -384,60 +385,10 @@ function tileHTML(n, opts={}){
   </div>`;
 }
 
-function totalsForPlayers(){
-  const totals = state.players.map(()=>0);
-  state.rounds.forEach(r=>{
-    state.players.forEach((_,i)=>{ totals[i] += (r.scores[i]||0); });
-  });
-  return totals;
-}
+// Pure scoring/tiebreaker logic lives in game-logic.js so it can be unit
+// tested outside the browser; pull the functions in from there.
+const { totalsForPlayers, zeroRoundCount, lowestNonZeroRound, determineWinner, TIEBREAK_LABEL } = window.MexicanTrainLogic;
 
-// Number of rounds player i scored exactly 0 pips (i.e. went out first / won the round)
-function zeroRoundCount(i){
-  return state.rounds.filter(r => (r.scores[i]||0) === 0).length;
-}
-
-// Player i's lowest non-zero round score, or null if they never scored above 0
-function lowestNonZeroRound(i){
-  const nonZero = state.rounds.map(r => r.scores[i]||0).filter(s => s > 0);
-  return nonZero.length ? Math.min(...nonZero) : null;
-}
-
-/**
- * Determines the winner(s), applying tiebreakers in order when totals are tied:
- *   1. Lowest total score.
- *   2. Most rounds won with 0 points.
- *   3. Lowest single non-zero round score.
- * Returns { winners: [playerIdx...], reason, totals } — reason is 'total',
- * 'zero-rounds', 'lowest-nonzero', or 'tie' (still tied after all tiebreakers).
- */
-function determineWinner(){
-  const totals = totalsForPlayers();
-  const minTotal = Math.min(...totals);
-  let candidates = state.players.map((_,i)=>i).filter(i => totals[i]===minTotal);
-  let reason = 'total';
-
-  if(candidates.length > 1){
-    const maxZero = Math.max(...candidates.map(zeroRoundCount));
-    const zeroTied = candidates.filter(i => zeroRoundCount(i)===maxZero);
-    if(zeroTied.length < candidates.length) reason = 'zero-rounds';
-    candidates = zeroTied;
-
-    if(candidates.length > 1){
-      const values = candidates.map(i => lowestNonZeroRound(i));
-      const comparable = values.filter(v => v !== null);
-      const minLowest = comparable.length ? Math.min(...comparable) : null;
-      const nonZeroTied = minLowest === null
-        ? candidates
-        : candidates.filter((i, idx) => values[idx] === minLowest);
-      if(nonZeroTied.length < candidates.length) reason = 'lowest-nonzero';
-      candidates = nonZeroTied;
-      if(candidates.length > 1) reason = 'tie';
-    }
-  }
-
-  return { winners: candidates, reason, totals };
-}
 
 function rerender(){
   if(state.phase==='setup') renderSetup();
@@ -473,8 +424,8 @@ function renderSetup(){
       <div id="player-list">
         ${state.players.map((p,i)=>`
           <div class="player-row">
-            <input type="text" data-i="${i}" class="player-name" value="${p.replace(/"/g,'&quot;')}" placeholder="Player name">
-            <button class="icon-btn remove-player" data-i="${i}" title="Remove player" ${state.players.length<=3?'disabled style="opacity:.3;cursor:not-allowed;"':''}>✕</button>
+            <input type="text" data-i="${i}" class="player-name" value="${p.replace(/"/g,'&quot;')}" placeholder="Player name" aria-label="Player ${i+1} name">
+            <button class="icon-btn remove-player" data-i="${i}" title="Remove player" aria-label="Remove player ${i+1}" ${state.players.length<=3?'disabled style="opacity:.3;cursor:not-allowed;"':''}>✕</button>
           </div>`).join('')}
       </div>
       <button class="add-player" id="add-player" ${state.players.length>=8?'disabled style="opacity:.3;cursor:not-allowed;"':''}>+ Add player</button>
@@ -559,7 +510,7 @@ function renderGame(){
       <p class="card-hint">Tap a tile to make it the engine currently in play.</p>
       <div class="track-scroll" id="track">
         ${state.doublesLeft.map(n=>`
-          <button class="tile-slot select-double" data-n="${n}">
+          <button class="tile-slot select-double" data-n="${n}" aria-label="${n===current ? `Double-${n}, currently in play` : `Play double-${n}`}" aria-pressed="${n===current}">
             ${tileHTML(n,{mini:true,current:n===current,selectable:true})}
             <div class="tile-label">${n===current?'in play':''}</div>
           </button>`).join('')}
@@ -579,7 +530,7 @@ function renderGame(){
           ${state.players.map((p,i)=>`
             <tr>
               <td class="pname">${p}</td>
-              <td><input type="number" min="0" inputmode="numeric" class="round-score" data-i="${i}" placeholder="0" value="0"></td>
+              <td><input type="number" min="0" inputmode="numeric" class="round-score" data-i="${i}" placeholder="0" value="0" aria-label="${p} — remaining pips this round"></td>
             </tr>`).join('')}
         </tbody>
       </table>
@@ -631,7 +582,7 @@ function renderGame(){
 }
 
 function renderStandingsCard(){
-  const totals = totalsForPlayers();
+  const totals = totalsForPlayers(state);
   const order = state.players.map((_,i)=>i).sort((a,b)=>totals[a]-totals[b]);
   const lowest = totals[order[0]];
 
@@ -664,12 +615,6 @@ function renderStandingsCard(){
 }
 
 /* ---------------- Finished screen ---------------- */
-const TIEBREAK_LABEL = {
-  'total': 'Lowest total score',
-  'zero-rounds': 'Tiebreaker: most rounds won with 0 points',
-  'lowest-nonzero': 'Tiebreaker: lowest single non-zero round score',
-  'tie': 'Still tied after all tiebreakers'
-};
 
 function renderTiebreakerCard(result){
   const { totals, winners, reason } = result;
@@ -692,12 +637,12 @@ function renderTiebreakerCard(result){
           </thead>
           <tbody>
             ${tiedGroup.map(i=>{
-              const lowest = lowestNonZeroRound(i);
+              const lowest = lowestNonZeroRound(state, i);
               return `
                 <tr>
                   <td>${state.players[i]}</td>
                   <td>${totals[i]}</td>
-                  <td class="${reason==='zero-rounds' && winners.includes(i) ? 'winner-cell':''}">${zeroRoundCount(i)}</td>
+                  <td class="${reason==='zero-rounds' && winners.includes(i) ? 'winner-cell':''}">${zeroRoundCount(state, i)}</td>
                   <td class="${reason==='lowest-nonzero' && winners.includes(i) ? 'winner-cell':''}">${lowest===null ? '—' : lowest}</td>
                 </tr>`;
             }).join('')}
@@ -709,7 +654,7 @@ function renderTiebreakerCard(result){
 }
 
 function renderFinished(){
-  const result = determineWinner();
+  const result = determineWinner(state);
   const { winners, totals, reason } = result;
   const isTie = winners.length > 1;
 

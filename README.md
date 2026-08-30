@@ -58,10 +58,28 @@ delete `data/state.json` by hand while the app isn't running.
 
 ## Testing
 
-End-to-end tests (TypeScript, Playwright) live in `tests/` and drive the
-real app through a browser — setup validation, manual double selection,
-scoring, undo, persistence across reloads, and all three winner
-tiebreakers.
+There are two layers of automated tests.
+
+**Unit tests** (plain JavaScript, Node's built-in test runner) live in
+`unit-tests/` and cover the scoring and tiebreaker logic in isolation —
+totals, zero-round counts, lowest-non-zero-round, and all four winner
+outcomes (outright win, each of the two tiebreakers, and a genuine shared
+tie). That logic lives in `public/js/game-logic.js` as dependency-free
+functions (state in, numbers out — no DOM, no fetch) specifically so it
+can be required directly in Node without a browser:
+
+```
+npm run test:unit
+```
+
+No extra install needed for this one — it's Node's built-in `node:test`,
+not a third-party framework.
+
+**End-to-end tests** (TypeScript, Playwright) live in `tests/` and drive
+the real app through a browser — setup validation, manual double
+selection, scoring, undo, persistence across reloads, the same
+tiebreakers verified end-to-end through the UI, and automated
+accessibility scans (see below).
 
 ```
 npm install
@@ -76,16 +94,45 @@ down afterward — no separate terminal needed. Useful variants:
 ```
 npm run test:e2e:ui        # interactive UI mode, great for writing/debugging tests
 npm run test:e2e:report    # reopen the HTML report from the last run
+npm run test:a11y          # just the accessibility scans
 ```
 
-The app keeps all game state in a single `data/state.json` file with no
-per-session isolation, so the suite runs serially (one worker) and each
-test resets state itself via `DELETE /api/state` before it starts. Keep
-that in mind if you add tests — don't raise `workers` in
-`playwright.config.ts` without also giving each test its own state store.
+Run everything the way CI does:
 
-Tests run automatically on every push and pull request to `main` via
-`.github/workflows/e2e.yml`. If a run fails in CI, download the
+```
+npm test
+```
+
+### Accessibility testing
+
+`tests/accessibility.spec.ts` uses [`@axe-core/playwright`](https://playwright.dev/docs/accessibility-testing)
+to scan each meaningfully different screen — setup, setup with a
+validation error, mid-game, mid-game with standings showing, the results
+screen, and the results screen with the tiebreaker card — for automatically
+detectable violations of WCAG 2.0/2.1 A and AA success criteria (the
+same rule set as Accessibility Insights for Web's Fast Pass). Each test
+asserts zero violations; a failure lists the specific rule, the affected
+element(s), and why axe flagged it.
+
+Automated scans like this catch real classes of issues (missing
+accessible names on form controls, insufficient color contrast, etc.) but
+not everything — screen-reader flow and keyboard-only usability still
+need manual passes. Treat a passing suite as a floor, not a ceiling.
+
+The app keeps all game state in a single `data/state.json` file with no
+per-session isolation, so the Playwright suite runs serially (one worker)
+and each test resets state itself via `DELETE /api/state` before it
+starts. Keep that in mind if you add tests — don't raise `workers` in
+`playwright.config.ts` without also giving each test its own state store.
+Also note the app debounces its saves by ~300ms (see `saveState()` in
+`public/index.html`), so any test that reloads right after a mutating
+action needs to wait for that save's `PUT /api/state` response first —
+see `withStateSave()` in `tests/helpers.ts`.
+
+Both suites run automatically on every push and pull request to `main`
+via `.github/workflows/e2e.yml` — unit tests first (fast, fails loudly
+before paying for a browser install), then the Playwright suite
+(functional + accessibility). If an e2e run fails in CI, download the
 `playwright-report` artifact from the workflow run for traces and
 screenshots of the failure.
 
@@ -95,21 +142,26 @@ screenshots of the failure.
 .
 ├── .github/
 │   └── workflows/
-│       └── e2e.yml      # Runs the Playwright suite in CI
+│       └── e2e.yml         # Runs unit tests, then the Playwright suite, in CI
 ├── Dockerfile
 ├── docker-compose.yml
 ├── package.json
 ├── playwright.config.ts
 ├── tsconfig.json
-├── server.js             # Express server + JSON-file persistence API
+├── server.js               # Express server + JSON-file persistence API
 ├── public/
-│   └── index.html        # Front-end app
+│   ├── index.html          # Front-end app (rendering, events, persistence)
+│   └── js/
+│       └── game-logic.js   # Pure scoring/tiebreaker logic, shared with unit tests
+├── unit-tests/
+│   └── scoring.test.js     # Unit tests for game-logic.js
 ├── tests/
-│   ├── helpers.ts         # Shared setup/scoring helpers for specs
+│   ├── helpers.ts           # Shared setup/scoring helpers for specs
 │   ├── setup.spec.ts
 │   ├── gameplay.spec.ts
 │   ├── tiebreaker.spec.ts
-│   └── persistence.spec.ts
+│   ├── persistence.spec.ts
+│   └── accessibility.spec.ts
 └── data/
-    └── state.json         # Created automatically; holds the current game
+    └── state.json           # Created automatically; holds the current game
 ```
