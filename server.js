@@ -50,6 +50,16 @@ app.delete('/api/state', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Mexican Train Score Keeper running on http://localhost:${PORT}`);
 });
+
+// In Docker, node runs as PID 1, which ignores SIGINT/SIGTERM unless handled.
+// Without this, Ctrl+C does nothing and `docker stop` hangs for ~10 seconds.
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    console.log(`Received ${signal}, shutting down.`);
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 1000).unref();
+  });
+}

@@ -9,7 +9,34 @@ Game state is written to `data/state.json` after every action, so reloading
 the browser — or restarting the container, as long as `data/` is mounted —
 picks up right where you left off.
 
-## Run with Docker Compose (recommended)
+## Quick start (no code, no download)
+
+You only need [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+installed and running. Then open a terminal (Terminal on Mac, PowerShell on
+Windows) and paste this one command:
+
+```
+docker run --rm -p 3000:3000 -v mexican-train-data:/app/data --pull always ghcr.io/slackerscpt/mexican_train:latest
+```
+
+Open **http://localhost:3000** in your browser and play. To stop the app,
+press `Ctrl+C` in the terminal (or close it).
+
+- Run the same command any time to start again — your game is saved in the
+  `mexican-train-data` Docker volume, so it picks up where you left off.
+- `--pull always` grabs the newest version each time you start it.
+- If port 3000 is already in use, change the first number, e.g.
+  `-p 8080:3000`, and open http://localhost:8080 instead.
+- To wipe the saved game and start completely fresh:
+  `docker volume rm mexican-train-data`
+
+The image is built and published automatically by GitHub Actions
+(`.github/workflows/e2e.yml`) whenever tests pass on `main`. **One-time
+setup for the maintainer:** after the first publish, open the repo's
+*Packages* → `mexican_train` → *Package settings* and set visibility to
+**Public**; until then, people get a "denied" error when pulling.
+
+## Run with Docker Compose (for developers)
 
 ```
 docker compose up --build
